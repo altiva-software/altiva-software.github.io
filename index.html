@@ -2508,5 +2508,24 @@ $("export").onclick = () => {
 
 renderAll();
 </script>
+<script>
+// Notification de visite (ntfy.sh) : ?v=nom identifie le lien, ?moi=1 exclut cet appareil
+(function(){
+  try {
+    var q = new URLSearchParams(location.search);
+    if (q.get("moi") === "1") { localStorage.setItem("altiva_ignore","1"); }
+    var who = q.get("v") || "lien sans identifiant";
+    if (q.has("v") || q.has("moi")) { history.replaceState(null, "", location.pathname); }
+    if (localStorage.getItem("altiva_ignore") === "1") return;
+    if (sessionStorage.getItem("altiva_seen")) return;
+    sessionStorage.setItem("altiva_seen","1");
+    var ua = navigator.userAgent;
+    var device = /Mobi|Android|iPhone/i.test(ua) ? "mobile" : "ordinateur";
+    var browser = /Edg\//.test(ua) ? "Edge" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "autre";
+    var msg = "Maquette ouverte - lien : " + who + "\n" + new Date().toLocaleString("fr-FR") + " - " + device + " / " + browser + (document.referrer ? "\nVenant de : " + document.referrer : "");
+    fetch("https://ntfy.sh/altiva-sdr-d77f8101435b?title=" + encodeURIComponent("Visite maquette Altiva : " + who) + "&tags=eyes", { method: "POST", body: msg });
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
